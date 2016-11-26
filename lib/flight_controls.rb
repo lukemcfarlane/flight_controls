@@ -1,0 +1,6 @@
+require_relative 'flight_controls/version'
+require_relative 'flight_controls/base'
+require_relative 'flight_controls/config'
+require_relative 'flight_controls/control'
+require_relative 'flight_controls/init'
+require_relative 'flight_controls/xplane'
