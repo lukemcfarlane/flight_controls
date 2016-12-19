@@ -4,8 +4,9 @@ require 'arduino_firmata'
 module FlightControls
 
   def self.start
-    @port = self.scan
-    self.init(@port)
+    # @port = self.scan
+    # self.init(@port)
+    FlightControls::XplaneDREF.test
   end
 
   def self.init(port)
