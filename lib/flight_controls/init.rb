@@ -6,7 +6,7 @@ module FlightControls
   def self.start
     # @port = self.scan
     # self.init(@port)
-    FlightControls::XplaneDREF.test
+    FlightControls::Xplane.test
   end
 
   def self.init(port)

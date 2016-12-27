@@ -2,31 +2,45 @@ require 'socket'
 
 module FlightControls::Xplane
 
-  HEADER_FORMAT = "CCCCC"
-  DATA_FORMAT = "iffffffff"
-  NOOP = -999
-  HEADER = "DATA\0".each_byte.to_a
+  TOTAL_LENGTH = 509
+  TEMPL = "CCCCCf" + ("C" * 500)
+  HEADER = "DREF0".bytes
+  NULL = 0
+  SPACE = 32
 
-  def self.test
-    id, *values = ARGV
-    msg = build_binary_data id.to_i, values.map { |v| v.to_f }
-    send_message msg
+  # def self.test
+  #   value, path = ARGV
+    # e.g.
+    # value = 0.0
+    # sim/electrical/battery_1_on[0]
+  #   msg = build_binary_data(value.to_f, path)
+  #   log(msg)
+  #   send_message msg
+  # end
+
+  def self.binary_message (value, path)
+    message = [ *HEADER ]
+    message.push(value)
+    message.push(*path.bytes)
+    message.push(NULL)
+
+    until message.length == TOTAL_LENGTH do
+      message.push(SPACE)
+    end
+
+    message.pack TEMPL
   end
 
-  def self.build_binary_data (id, values)
-    element = [
-      *HEADER,
-      id,
-      *values,
-      *Array.new(8 - values.length, NOOP) # pad with no ops
-    ]
-    templ = HEADER_FORMAT + DATA_FORMAT
-    element.pack templ
-  end
+  # def self.log (msg)
+  #   puts "Length: #{msg.length}"
+  #   msg.each_char do |char|
+  #     puts "#{char.bytes[0]}\t#{char}"
+  #   end
+  # end
 
-  def self.send_message (msg)
-    s = UDPSocket.new
-    s.connect('127.0.0.1', 49000)
-    s.send msg, 0
-  end
+  # def self.send_message (msg)
+  #   s = UDPSocket.new
+  #   s.connect('127.0.0.1', 49000)
+  #   s.send msg, 0
+  # end
 end
