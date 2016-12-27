@@ -4,39 +4,16 @@ require 'arduino_firmata'
 module FlightControls
 
   def self.start
-    # @port = self.scan
-    # self.init(@port)
-    FlightControls::Xplane.test
+    @port = self.scan
+    self.init(@port)
+    # FlightControls::Xplane.test
   end
 
   def self.init(port)
-    puts "Initializing with port: #{port}"
-    @board = ArduinoFirmata.connect "/dev/#{port}"
-    puts 'Connected'
-    puts "Firmata version: #{@board.version}"
-
+    @connection = Xplane::Connection.new('127.0.0.1', 49000)
     FlightControls::config do |config|
-      config.controls.each do |control|
-        @board.pin_mode control.pin, ArduinoFirmata.const_get(control.mode)
-      end
-
-      loop do
-        control = config.controls[2]
-        config.controls.each do |control|
-          val = @board.digital_read control.pin
-          if control.set_value(val)
-            puts "#{control.name} (#{control.channel}) turned #{val ? 'off' : 'on' }"
-            values = Array.new(8, FlightControls::Xplane::NOOP)
-            values[control.index] = val ? 0.0 : 1.0
-            msg = FlightControls::Xplane::build_binary_data(
-              control.channel,
-              values
-            )
-            FlightControls::Xplane::send_message(msg)
-          end
-        end
-        sleep 0.1
-      end
+      @electrical_panel = Module.new('Electrical panel', port, config.controls)
+      @electrical_panel.start_read(@connection, 0.1)
     end
   end
 
